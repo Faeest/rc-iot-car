@@ -58,6 +58,15 @@ Arduino Uno **tidak** punya `ledcSetup` / `ledcWrite` (itu khusus ESP32). Gunaka
 
 ## Cara build & flash
 
+### Cek compile tanpa hardware (arduino-cli)
+
+```bash
+# butuh rc_car/secrets.h (salin dari secrets.example.h; di-gitignore)
+arduino-cli compile --fqbn arduino:avr:uno firmware/rc_car
+```
+
+### Lewat Arduino IDE
+
 1. Buka `firmware/rc_car/rc_car.ino` di Arduino IDE.
 2. Pilih board **Arduino Uno**.
 3. Verify → Upload.

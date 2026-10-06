@@ -3,7 +3,7 @@
 ## What this repo is
 
 Firmware for an **IoT RC car** — drives 2 DC motors through an **L298N** motor driver,
-controlled over Bluetooth and WiFi from an **Arduino Uno + Arduino Shield V5.0**.
+controlled over **Bluetooth (HC-05)** from an **Arduino Uno + Arduino Shield V5.0**.
 This is the code-development part of an already-working hardware build.
 
 **Do NOT assume this is a web app.** The course ("Application Project II", 2 SKS, semester 5,
@@ -50,9 +50,17 @@ scope is "Bluetooth dan WiFi". Confirm whether WiFi is actually in scope.
 
 - **Arduino IDE**, sketches are `.ino` (not PlatformIO, not ESP-IDF).
 - Target board: **Arduino Uno** (AVR). The Uno is 5V logic — do not write 3.3V-only code.
-- Build / flash: Arduino IDE toolbar (Verify / Upload). There is **no CLI build, no test
-  runner, no CI** — do not invent `npm`/`pytest`/`make` commands.
-- "Testing" = flash to the physical car and exercise it over Bluetooth/WiFi. State clearly
+- Build / flash: Arduino IDE toolbar (Verify / Upload). There is **no test runner and no CI** —
+  do not invent `npm`/`pytest`/`make` commands.
+- **Compile-verify without hardware** (verified working, arduino-cli 1.5.1 + `arduino:avr` core):
+
+  ```bash
+  # needs firmware/rc_car/secrets.h (copy from secrets.example.h); it is gitignored
+  arduino-cli compile --fqbn arduino:avr:uno firmware/rc_car
+  ```
+
+  Uno budget: 32256 B flash / 2048 B RAM. Current skeleton sits at ~5% flash / ~8% RAM.
+- "Testing" = flash to the physical car and exercise it over Bluetooth. State clearly
   when a change is unverified on hardware.
 
 ## Gotchas
