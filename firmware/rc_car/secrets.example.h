@@ -2,8 +2,10 @@
 // `secrets.h` di-gitignore — JANGAN commit kredensial asli.
 #pragma once
 
-#define WIFI_SSID "isi-ssid-di-sini"
-#define WIFI_PASSWORD "isi-password-di-sini"
+// HC-05: nama yang muncul saat pairing dan PIN/passkey-nya.
+#define BT_NAME    "RC-CAR"
+#define BT_PASSKEY "1234"
 
-// Kunci/passkey Bluetooth bila modul memerlukannya.
-#define BT_PASSKEY "0000"
+// WiFi hanya bila memang dipakai (kit saat ini belum ada modul WiFi).
+#define WIFI_SSID     "isi-ssid-di-sini"
+#define WIFI_PASSWORD "isi-password-di-sini"

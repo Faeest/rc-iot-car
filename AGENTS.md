@@ -20,11 +20,11 @@ PHP/Laravel here. Scope is embedded firmware only.
 
 - Main board: **Arduino Uno** (ATmega328P, AVR, 5V logic).
 - Expansion: **Arduino Shield V5.0** — required because the Uno has too few pins.
-  Breaks out Analog I/O (A0–A5), Digital I/O (D0–D13), External Power, SD/SPI, Ultrasonic,
-  a **Bluetooth connector**, a **Wireless connector**, LCD (parallel & serial), and I2C.
   The `SEL` jumper selects the VCC source feeding the I/O headers.
-- The Uno has **no built-in WiFi or Bluetooth** — wireless comes from modules plugged into
-  the shield's Bluetooth / Wireless connectors. **Module models are not yet confirmed.**
+- Wireless: **HC-05 Bluetooth module** (confirmed kit part). The Uno has no built-in
+  wireless, so Bluetooth comes from this module on the shield's Bluetooth connector.
+- Sensor: **ultrasonic only** (HC-SR04-class).
+- Power: **3.2 V battery + holder**.
 - Motor driver: **L298N**. Two DC motors, one per channel:
 
   | Signal | Meaning |
@@ -38,6 +38,13 @@ PHP/Laravel here. Scope is embedded firmware only.
   | 5V, GND | logic supply / ground |
 
 - Motors: 2× DC motor. **External supply is required** — the Uno cannot power the motors.
+
+**In the kit but deliberately NOT used — do not add code, pins, or libraries for these:**
+I2C, infrared (IR) obstacle sensor, LCD (I2C or parallel). The shield exposes SD/SPI,
+Ultrasonic, LCD, and I2C headers, but only the ultrasonic sensor is wired up.
+
+**Open question:** the kit ships HC-05 (Bluetooth) but **no WiFi module**, yet the stated
+scope is "Bluetooth dan WiFi". Confirm whether WiFi is actually in scope.
 
 ## Toolchain
 
@@ -61,7 +68,9 @@ PHP/Laravel here. Scope is embedded firmware only.
   the external supply, never from the Uno.
 - The shield already claims pins (SPI/SD, LCD, connector headers). Don't assign a pin the
   shield is using.
-- Pin map, PWM values, wireless module models, and command protocol are **not yet fixed** —
+- **Power sanity check:** the L298N wants roughly 5–12 V on its motor supply, but the kit
+  battery is **3.2 V**. Verify the real power setup before assuming the motors will move.
+- Pin map, PWM values, ultrasonic behaviour, and command protocol are **not yet fixed** —
   see `firmware/README.md`. Confirm real wiring before hardcoding pins.
 - Docs and code comments are Indonesian; keep new docs consistent.
 

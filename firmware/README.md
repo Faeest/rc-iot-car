@@ -19,10 +19,20 @@ Nilai-nilai di bawah **belum pasti** dan harus dicek ke wiring/hardware asli:
   - `IN3` / `IN4` (arah Motor B): `[TBD]`
   - `ENA` / `ENB` (PWM): `[TBD]` — **wajib** di pin PWM Uno: 3, 5, 6, 9, 10, 11.
 - Kecepatan motor (nilai PWM default): `[TBD]`
-- Modul Bluetooth yang dipakai (mis. HC-05 / HC-06) + konektor di shield: `[TBD]`
-- Modul wireless untuk WiFi + konektornya: `[TBD]`
-- Mode WiFi: AP (modul jadi hotspot) atau STA (nyambung ke WiFi yang ada)? `[TBD]`
+- Modul Bluetooth: **HC-05** (sudah pasti) — konektor mana di shield, dan baud rate-nya? `[TBD]`
+- Fungsi sensor ultrasonic (mis. deteksi rintangan / ukur jarak): `[TBD]`
+- Pin Trig/Echo ultrasonic: `[TBD]`
 - Protokol perintah (mis. `F` maju, `B` mundur, `S` berhenti): `[TBD]`
+
+## Komponen yang TIDAK dipakai
+
+Jangan tambahkan kode/pin/library untuk: **I2C, sensor infrared (IR), dan LCD**.
+Sensor yang dipakai hanya **ultrasonic**.
+
+## Catatan WiFi
+
+Kit hanya menyertakan modul **HC-05 (Bluetooth)** — tidak ada modul WiFi.
+Perlu dikonfirmasi apakah WiFi benar-benar masuk scope.
 
 ## Referensi L298N
 
