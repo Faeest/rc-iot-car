@@ -1,0 +1,14 @@
+# Secrets
+firmware/secrets.h
+
+# Arduino IDE
+build/
+*.elf
+*.bin
+*.hex
+*.map
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db
