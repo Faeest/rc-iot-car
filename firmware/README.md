@@ -6,7 +6,9 @@ Papan utama: **ESP32**. Motor driver: **L298N** (2 motor DC).
 ## Struktur
 
 - `rc_car/rc_car.ino` — sketch utama (nama folder harus sama dengan nama sketch).
-- `secrets.example.h` — template kredensial; salin jadi `secrets.h` (di-gitignore).
+- `rc_car/secrets.example.h` — template kredensial; salin jadi
+  `rc_car/secrets.h` (di-gitignore). File harus ada di dalam folder sketch
+  karena Arduino IDE hanya meng-compile file di dalam folder sketch.
 
 ## TODO — konfirmasi sebelum hardcoding
 

@@ -47,15 +47,18 @@ PHP/Laravel here. Scope is embedded firmware only.
 
 ## Layout
 
-- `firmware/rc_car/rc_car.ino` — the Arduino sketch (folder name must match sketch name).
+- `firmware/rc_car/rc_car.ino` — the Arduino sketch. Arduino IDE only compiles files
+  **inside the sketch folder**, so every file the sketch needs (including `secrets.h`)
+  must live in `firmware/rc_car/`, not in `firmware/`.
+- `firmware/rc_car/secrets.h` — WiFi/BLE credentials, **gitignored**.
+  `firmware/rc_car/secrets.example.h` is the template.
 - `firmware/README.md` — hardware TODO list (pin map, protocol, modes).
-- `firmware/secrets.h` — WiFi/BLE credentials, **gitignored**. `secrets.example.h` is the template.
 - `docs/` — course deliverables (team profile, reports). Indonesian prose.
 
 ## Gotchas
 
-- **Never commit WiFi SSID/password or Bluetooth keys.** Put them in `firmware/secrets.h`
-  (gitignored) and `#include` it.
+- **Never commit WiFi SSID/password or Bluetooth keys.** Put them in
+  `firmware/rc_car/secrets.h` (gitignored) and `#include` it.
 - ESP32 logic is **3.3V**; L298N is designed around 5V logic. 3.3V is usually read as HIGH,
   but treat ENA/ENB PWM as needing verification on the bench.
 - **Common ground** between the ESP32 and the L298N is mandatory, and motors must run from

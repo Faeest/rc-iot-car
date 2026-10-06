@@ -1,5 +1,5 @@
 # Secrets
-firmware/secrets.h
+firmware/**/secrets.h
 
 # Arduino IDE
 build/
