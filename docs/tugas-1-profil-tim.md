@@ -15,17 +15,20 @@
 ## Visi Proyek
 
 Mengembangkan perangkat lunak (firmware) untuk mobil RC berbasis IoT menggunakan
-mikrokontroler **ESP32**, dengan **Motor Driver L298N** untuk mengendalikan 2 motor DC,
-sehingga mobil dapat dikendalikan secara nirkabel melalui **Bluetooth** maupun **WiFi**.
+mikrokontroler **Arduino Uno** dengan **Arduino Shield V5.0** sebagai perluasan pin,
+serta **Motor Driver L298N** untuk mengendalikan 2 motor DC, sehingga mobil dapat
+dikendalikan secara nirkabel melalui **Bluetooth** maupun **WiFi**.
 
 Ruang lingkup pengembangan kode:
 
 - Kontrol gerak dasar: maju dan mundur (serta pengembangan arah lain bila diperlukan).
 - Kontrol arah dan kecepatan motor melalui pin IN1–IN4 dan PWM pada ENA/ENB L298N.
-- Kendali nirkabel dua mode: Bluetooth dan WiFi (memanfaatkan fitur bawaan ESP32).
+- Kendali nirkabel dua mode: Bluetooth dan WiFi (modul terpasang pada konektor
+  Bluetooth / Wireless di Arduino Shield V5.0).
 
-Hardware (ESP32, Motor Driver L298N, 2 motor DC, baterai/suplai eksternal) sudah
-tersedia dan berfungsi; fokus tugas ini adalah pengembangan kode-nya.
+Hardware (Arduino Uno, Arduino Shield V5.0, Motor Driver L298N, 2 motor DC,
+baterai/suplai eksternal) sudah tersedia dan berfungsi; fokus tugas ini adalah
+pengembangan kode-nya.
 
 ## Pembagian Tanggung Jawab
 
@@ -40,4 +43,4 @@ tersedia dan berfungsi; fokus tugas ini adalah pengembangan kode-nya.
 
 ## Tautan Repositori GitHub
 
-https://github.com/Faeest
+https://github.com/Faeest/rc-iot-car

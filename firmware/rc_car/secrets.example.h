@@ -5,5 +5,5 @@
 #define WIFI_SSID "isi-ssid-di-sini"
 #define WIFI_PASSWORD "isi-password-di-sini"
 
-// Kunci/passkey BLE bila diperlukan.
-#define BLE_PASSKEY "000000"
+// Kunci/passkey Bluetooth bila modul memerlukannya.
+#define BT_PASSKEY "0000"
