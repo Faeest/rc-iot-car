@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wireframe — Aplikasi Kontrol Mobil RC IoT</title>
+<style>
+  /* Low-fidelity wireframe sheet: greyscale, structure only, no branding.
+     Deliberately unstyled so reviewers judge layout, not visuals. */
+  :root{
+    --ink:#333;
+    --line:#b9bec6;
+    --fill:#e9ebee;
+    --fill-2:#dfe2e6;
+    --paper:#ffffff;
+    --bg:#f2f3f5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);padding:30px 22px 60px;
+  }
+  .sheet-head{max-width:1560px;margin:0 auto 26px}
+  .sheet-head h1{margin:0 0 6px;font-size:21px}
+  .sheet-head p{margin:0;font-size:13px;color:#6b7280;max-width:900px;line-height:1.6}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px;font-size:12px;color:#6b7280}
+  .legend b{color:var(--ink)}
+
+  .grid{
+    max-width:1560px;margin:0 auto;display:grid;
+    grid-template-columns:repeat(5,1fr);gap:22px;
+  }
+  @media (max-width:1500px){ .grid{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:980px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:620px){ .grid{grid-template-columns:1fr} }
+
+  .frame{display:flex;flex-direction:column;gap:10px}
+  .frame > .cap{
+    display:flex;align-items:baseline;gap:8px;font-size:12.5px;font-weight:700;color:#374151;
+  }
+  .frame > .cap span{font-weight:500;color:#9aa1ab;font-size:11.5px}
+
+  .wf{
+    background:var(--paper);border:1px solid var(--line);border-radius:20px;
+    height:640px;padding:14px 13px;display:flex;flex-direction:column;gap:10px;
+    position:relative;overflow:hidden;
+  }
+  /* status bar */
+  .wf .sb{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;color:#9aa1ab;padding:0 3px}
+  .wf .sb .g{display:flex;gap:4px}
+  .wf .sb i{display:block;width:14px;height:8px;border:1px solid var(--line);border-radius:2px}
+
+  /* generic blocks */
+  .box{background:var(--fill);border:1px dashed var(--line);border-radius:8px}
+  .line{height:9px;border-radius:5px;background:var(--fill-2)}
+  .line.w90{width:90%} .line.w75{width:75%} .line.w60{width:60%}
+  .line.w45{width:45%} .line.w30{width:30%}
+  .lbl{font-size:9.5px;color:#8b929c;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+
+  /* top strip */
+  .strip{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--line);border-radius:9px}
+  .dotm{width:11px;height:11px;border-radius:50%;border:1.5px solid var(--line);flex:none}
+  .strip .t{height:8px;border-radius:4px;background:var(--fill-2);width:56px}
+  .strip .s{height:7px;border-radius:4px;background:var(--fill);width:74px;margin-left:auto}
+
+  .h{height:15px;width:58%;border-radius:5px;background:var(--fill-2)}
+  .sub{height:8px;width:88%;border-radius:4px;background:var(--fill)}
+
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .kpis .k{border:1px solid var(--line);border-radius:9px;padding:8px 7px;display:flex;flex-direction:column;gap:6px}
+  .kpis .k .v{height:13px;width:70%;border-radius:4px;background:var(--fill-2)}
+
+  .pad{
+    width:100%;aspect-ratio:1;max-width:212px;margin:2px auto 0;border-radius:50%;
+    border:1px dashed var(--line);background:var(--fill);display:grid;place-items:center;position:relative;
+  }
+  .pad .in{width:44%;aspect-ratio:1;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;font-size:9px;color:#9aa1ab;font-weight:700}
+  .pad .d{position:absolute;font-size:8.5px;color:#9aa1ab;font-weight:700}
+  .pad .d.t{top:7px} .pad .d.b{bottom:7px} .pad .d.l{left:7px} .pad .d.r{right:7px}
+
+  .slider{height:6px;border-radius:99px;background:var(--fill-2);position:relative}
+  .slider::after{content:"";position:absolute;top:-5px;left:64%;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid var(--line)}
+  .slider.alt::after{left:22%}
+
+  .btnbox{border:1px solid var(--line);border-radius:9px;padding:13px;text-align:center;font-size:10.5px;color:#6b7280;background:#fff}
+  .btnbox.solid{background:var(--fill-2);border-style:solid;color:#4b5563;font-weight:700}
+
+  .rowb{display:flex;align-items:center;gap:9px;padding:10px 9px;border:1px solid var(--line);border-radius:9px}
+  .rowb .ic{width:24px;height:24px;border-radius:6px;background:var(--fill);flex:none}
+  .rowb .tx{display:flex;flex-direction:column;gap:5px;flex:1}
+  .rowb .tx .a{height:9px;width:60%;border-radius:4px;background:var(--fill-2)}
+  .rowb .tx .b{height:7px;width:80%;border-radius:4px;background:var(--fill)}
+  .rowb .end{width:26px;height:8px;border-radius:4px;background:var(--fill)}
+
+  .dev{display:flex;align-items:center;gap:9px;padding:11px 9px;border:1px solid var(--line);border-radius:9px}
+  .dev.on{border-style:solid;border-width:1.5px;background:var(--fill)}
+  .dev .ic{width:26px;height:26px;border-radius:7px;background:var(--fill-2);flex:none}
+  .dev .tx{display:flex;flex-direction:column;gap:5px;flex:1}
+  .dev .tx .a{height:9px;width:52%;border-radius:4px;background:var(--fill-2)}
+  .dev .tx .b{height:7px;width:70%;border-radius:4px;background:var(--fill)}
+
+  .sw{width:34px;height:19px;border-radius:99px;border:1px solid var(--line);background:var(--fill);position:relative;flex:none}
+  .sw::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;border:1px solid var(--line)}
+
+  .gauge{
+    width:150px;height:150px;margin:4px auto;border-radius:50%;
+    border:11px solid var(--fill);border-right-color:var(--fill-2);border-bottom-color:var(--fill-2);
+    display:grid;place-items:center;position:relative;
+  }
+  .gauge .mid{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .gauge .mid .v{height:20px;width:38px;border-radius:5px;background:var(--fill-2)}
+  .gauge .mid .u{height:7px;width:50px;border-radius:4px;background:var(--fill)}
+
+  .bars{display:flex;align-items:flex-end;gap:4px;height:52px;padding:8px;border:1px solid var(--line);border-radius:9px}
+  .bars i{flex:1;background:var(--fill-2);border-radius:3px}
+
+  .tabbar{margin-top:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;border-top:1px solid var(--line);padding-top:9px}
+  .tabbar .t{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:8.5px;color:#9aa1ab}
+  .tabbar .t i{width:16px;height:16px;border-radius:5px;border:1px solid var(--line);display:block}
+  .tabbar .t.on{color:#4b5563;font-weight:700}
+  .tabbar .t.on i{background:var(--fill-2);border-color:#9aa1ab}
+
+  .note{font-size:11.5px;color:#6b7280;line-height:1.55;background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+  .note b{color:#374151}
+</style>
+</head>
+<body>
+
+<div class="sheet-head">
+  <h1>Wireframe Lo-Fi — Aplikasi Kontrol Mobil RC IoT</h1>
+  <p>Wireframe tingkat rendah (tanpa warna dan tanpa ikon final) yang menekankan
+     <b>struktur, hierarki, dan tata letak</b> tiap layar. Wireframe ini menjadi
+     dasar sebelum dibuat prototype visual pada <code>index.html</code>.</p>
+  <div class="legend">
+    <span><b>Kotak putus-putus</b> = area konten</span>
+    <span><b>Kotak abu-abu</b> = elemen (tombol/ikon/gambar)</span>
+    <span><b>Garis abu</b> = teks (placeholder)</span>
+    <span><b>Ukuran target</b> = 390 × 844 px (mobile)</span>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- ============ 1. HUBUNGKAN ============ -->
+  <div class="frame">
+    <div class="cap">1. Hubungkan <span>UC-01</span></div>
+    <div class="wf">
+      <div class="sb"><span>09:41</span><span class="g"><i></i><i></i></span></div>
+
+      <div style="margin-top:34px;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <div class="box" style="width:76px;height:76px;border-radius:20px"></div>
+        <div class="line w60" style="height:15px"></div>
+        <div class="line w75"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:9px;margin-top:8px">
+        <div class="dev on"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end" style="width:22px;height:14px;background:var(--fill-2);border-radius:3px"></div></div>
+        <div class="dev"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end" style="width:22px;height:14px;background:var(--fill);border-radius:3px"></div></div>
+      </div>
+
+      <div class="btnbox solid" style="margin-top:6px">TOMBOL HUBUNGKAN</div>
+      <div class="line w75" style="margin:6px auto 0"></div>
+
+      <div class="tabbar" style="visibility:hidden"><div class="t"><i></i></div><div class="t"><i></i></div><div class="t"><i></i></div><div class="t"><i></i></div></div>
+    </div>
+  </div>
+
+  <!-- ============ 2. KONTROL ============ -->
+  <div class="frame">
+    <div class="cap">2. Kontrol <span>UC-02, UC-03, UC-04</span></div>
+    <div class="wf">
+      <div class="sb"><span>09:41</span><span class="g"><i></i><i></i></span></div>
+      <div class="strip"><span class="dotm"></span><span class="t"></span><span class="s"></span></div>
+
+      <div class="h"></div>
+      <div class="sub"></div>
+
+      <div class="kpis">
+        <div class="k"><div class="lbl">SPD</div><div class="v"></div></div>
+        <div class="k"><div class="lbl">JARAK</div><div class="v"></div></div>
+        <div class="k"><div class="lbl">MODE</div><div class="v"></div></div>
+      </div>
+
+      <div class="pad">
+        <span class="d t">MAJU</span><span class="d b">MUNDUR</span>
+        <span class="d l">KIRI</span><span class="d r">KANAN</span>
+        <div class="in">DIAM</div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:2px">
+        <div class="line w45"></div><div class="line w30"></div>
+      </div>
+      <div class="slider"></div>
+
+      <div class="btnbox solid" style="background:var(--fill);border-style:solid">E-STOP</div>
+
+      <div class="tabbar">
+        <div class="t on"><i></i>Kontrol</div><div class="t"><i></i>Sensor</div>
+        <div class="t"><i></i>Mode</div><div class="t"><i></i>Setelan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3. SENSOR ============ -->
+  <div class="frame">
+    <div class="cap">3. Sensor <span>UC-06</span></div>
+    <div class="wf">
+      <div class="sb"><span>09:41</span><span class="g"><i></i><i></i></span></div>
+      <div class="strip"><span class="dotm"></span><span class="t"></span><span class="s"></span></div>
+
+      <div class="h"></div>
+      <div class="sub"></div>
+
+      <div class="gauge"><div class="mid"><div class="v"></div><div class="u"></div></div></div>
+      <div class="box" style="width:66px;height:18px;border-radius:99px;margin:2px auto"></div>
+
+      <div class="lbl" style="margin-top:2px">RIWAYAT PEMBACAAN</div>
+      <div class="bars">
+        <i style="height:40%"></i><i style="height:62%"></i><i style="height:34%"></i>
+        <i style="height:78%"></i><i style="height:55%"></i><i style="height:88%"></i>
+        <i style="height:47%"></i><i style="height:70%"></i><i style="height:30%"></i>
+        <i style="height:60%"></i>
+      </div>
+
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+
+      <div class="tabbar">
+        <div class="t"><i></i>Kontrol</div><div class="t on"><i></i>Sensor</div>
+        <div class="t"><i></i>Mode</div><div class="t"><i></i>Setelan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 4. MODE ============ -->
+  <div class="frame">
+    <div class="cap">4. Mode <span>UC-05</span></div>
+    <div class="wf">
+      <div class="sb"><span>09:41</span><span class="g"><i></i><i></i></span></div>
+      <div class="strip"><span class="dotm"></span><span class="t"></span><span class="s"></span></div>
+
+      <div class="h"></div>
+      <div class="sub"></div>
+
+      <div class="box" style="padding:13px;display:flex;align-items:center;gap:10px;background:#fff;border-style:solid;border-color:var(--line)">
+        <div class="tx" style="flex:1;display:flex;flex-direction:column;gap:7px">
+          <div class="line w75" style="height:11px"></div>
+          <div class="line w90"></div>
+        </div>
+        <div class="sw"></div>
+      </div>
+
+      <div class="box" style="padding:13px;display:flex;flex-direction:column;gap:11px;background:#fff;border-style:solid;border-color:var(--line)">
+        <div style="display:flex;justify-content:space-between"><div class="line w45"></div><div class="line w30"></div></div>
+        <div class="slider alt"></div>
+        <div class="line w90"></div>
+      </div>
+
+      <div class="box" style="padding:13px;display:flex;flex-direction:column;gap:8px;background:#fff;border-style:solid;border-color:var(--line);border-left:3px solid #9aa1ab">
+        <div class="line w30" style="height:10px"></div>
+        <div class="line w90"></div>
+      </div>
+
+      <div class="tabbar">
+        <div class="t"><i></i>Kontrol</div><div class="t"><i></i>Sensor</div>
+        <div class="t on"><i></i>Mode</div><div class="t"><i></i>Setelan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 5. SETELAN ============ -->
+  <div class="frame">
+    <div class="cap">5. Setelan</div>
+    <div class="wf">
+      <div class="sb"><span>09:41</span><span class="g"><i></i><i></i></span></div>
+      <div class="strip"><span class="dotm"></span><span class="t"></span><span class="s"></span></div>
+
+      <div class="h"></div>
+      <div class="sub"></div>
+
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+      <div class="rowb"><div class="ic"></div><div class="tx"><div class="a"></div><div class="b"></div></div><div class="end"></div></div>
+
+      <div class="btnbox" style="margin-top:4px">TOMBOL PUTUSKAN KONEKSI</div>
+
+      <div class="tabbar">
+        <div class="t"><i></i>Kontrol</div><div class="t"><i></i>Sensor</div>
+        <div class="t"><i></i>Mode</div><div class="t on"><i></i>Setelan</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="sheet-head" style="margin-top:30px">
+  <div class="note" style="max-width:900px">
+    <b>Catatan wireframe.</b> Semua layar memakai satu kolom (mobile-first), header
+    status koneksi yang persisten, dan navigasi tab bawah dengan empat tujuan utama.
+    Tombol E-Stop ditempatkan paling bawah pada layar Kontrol agar mudah dijangkau
+    ibu jari dan sulit tersentuh secara tidak sengaja. Pada layar kecil, kolom tunggal
+    ini otomatis tetap proporsional karena seluruh elemen memakai lebar relatif (%).
+  </div>
+</div>
+
+</body>
+</html>

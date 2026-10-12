@@ -12,3 +12,7 @@ build/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local scratch (rendered page previews, temporary HTML) — not deliverables
+.scratch/
+__pycache__/

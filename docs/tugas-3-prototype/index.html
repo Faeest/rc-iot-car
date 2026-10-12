@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prototype — Aplikasi Kontrol Mobil RC IoT</title>
+<style>
+  /* ===================== Design tokens ===================== */
+  :root{
+    --bg:#070c16;
+    --panel:#0d1526;
+    --surface:#131f36;
+    --surface-2:#1b2b47;
+    --line:#24354f;
+    --accent:#0ea5e9;
+    --accent-2:#22d3ee;
+    --success:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --text:#e8eef7;
+    --muted:#8aa0b8;
+    --radius:16px;
+    --tap:48px;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI",Inter,-apple-system,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #14243d 0%, transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, #10293f 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  /* ===================== Page chrome ===================== */
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 22px 60px}
+  .topbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{
+    width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+    background:linear-gradient(140deg,var(--accent),var(--accent-2));color:#04121d;
+  }
+  .brand h1{margin:0;font-size:17px;letter-spacing:.2px}
+  .brand p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    border:1px solid var(--line);background:var(--surface);color:var(--muted);
+    padding:8px 14px;border-radius:999px;font-size:12.5px;cursor:pointer;
+    transition:.18s;min-height:36px;
+  }
+  .chip:hover{border-color:var(--accent);color:var(--text)}
+  .chip.on{background:linear-gradient(140deg,var(--accent),var(--accent-2));border-color:transparent;color:#04121d;font-weight:700}
+
+  .stage{display:grid;grid-template-columns:390px 1fr;gap:34px;align-items:start}
+  @media (max-width:900px){ .stage{grid-template-columns:1fr;justify-items:center} }
+
+  /* ===================== Phone frame ===================== */
+  .phone{
+    position:relative;width:390px;height:844px;flex:none;
+    background:#000;border-radius:46px;padding:12px;
+    box-shadow:0 40px 80px rgba(0,0,0,.6), 0 0 0 2px #1e2c42 inset;
+  }
+  .phone::after{ /* side button */
+    content:"";position:absolute;right:-3px;top:180px;width:3px;height:80px;
+    background:#26364f;border-radius:3px;
+  }
+  .screen{
+    position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;
+    background:var(--panel);display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:12px;left:50%;transform:translateX(-50%);
+    width:132px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:40;
+  }
+  .statusbar{
+    height:46px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 22px;font-size:12px;color:var(--muted);z-index:30;
+  }
+  .statusbar .right{display:flex;gap:6px;align-items:center}
+
+  /* Persistent connection strip below the status bar. */
+  .connbar{
+    flex:none;display:flex;align-items:center;gap:10px;
+    padding:6px 20px 10px;border-bottom:1px solid var(--line);
+  }
+  .connbar .small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .viewport{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px 20px 18px;scrollbar-width:thin}
+  .viewport::-webkit-scrollbar{width:6px}
+  .viewport::-webkit-scrollbar-thumb{background:#243550;border-radius:3px}
+
+  .scr{display:none;animation:fade .22s ease}
+  .scr.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ===================== Tab bar ===================== */
+  .tabbar{
+    flex:none;display:grid;grid-template-columns:repeat(4,1fr);
+    background:rgba(10,18,32,.92);border-top:1px solid var(--line);
+    padding:8px 6px 12px;backdrop-filter:blur(8px);
+  }
+  .tab{
+    background:none;border:0;color:var(--muted);font:inherit;font-size:10.5px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+    padding:6px 0;min-height:var(--tap);border-radius:10px;transition:.16s;
+  }
+  .tab svg{width:22px;height:22px}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--accent-2)}
+  .tabbar.hidden{display:none}
+
+  /* ===================== Common bits ===================== */
+  h2.title{font-size:19px;margin:8px 0 4px;letter-spacing:.2px}
+  .lead{font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.5}
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:15px;margin-bottom:14px;
+  }
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .muted{color:var(--muted)}
+  .small{font-size:11.5px}
+  .kpi{font-size:30px;font-weight:700;letter-spacing:-.5px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+    padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--muted);
+  }
+  .pill.ok{background:rgba(34,197,94,.14);border-color:rgba(34,197,94,.4);color:#7ee2a2}
+  .pill.off{background:rgba(138,160,184,.12);color:var(--muted)}
+  .pill.warn{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.4);color:#f7c46c}
+  .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+
+  .btn{
+    width:100%;min-height:var(--tap);border-radius:14px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--text);font:inherit;font-size:14.5px;font-weight:600;
+    cursor:pointer;transition:.16s;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .btn.primary{background:linear-gradient(140deg,var(--accent),var(--accent-2));color:#04121d;border-color:transparent}
+  .btn.primary:hover{filter:brightness(1.07)}
+  .btn.danger{background:linear-gradient(140deg,#dc2626,#f87171);color:#fff;border-color:transparent}
+
+  /* ===================== Connect screen ===================== */
+  .connect{display:flex;flex-direction:column;justify-content:center;min-height:640px;text-align:center}
+  .hero{
+    width:96px;height:96px;margin:0 auto 18px;border-radius:28px;display:grid;place-items:center;
+    background:linear-gradient(140deg,var(--accent),var(--accent-2));color:#04121d;
+    box-shadow:0 18px 40px rgba(14,165,233,.32);
+  }
+  .hero svg{width:52px;height:52px}
+  .connect h2{font-size:22px;margin:0 0 6px}
+  .device{
+    display:flex;align-items:center;gap:12px;text-align:left;width:100%;
+    background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:.16s;min-height:var(--tap);
+  }
+  .device:hover{border-color:var(--accent)}
+  .device.sel{border-color:var(--accent);background:rgba(14,165,233,.1)}
+  .device .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);flex:none}
+  .device b{font-size:13.5px;display:block}
+  .device span{font-size:11px;color:var(--muted)}
+  .rssi{margin-left:auto;display:flex;gap:2px;align-items:flex-end;height:16px}
+  .rssi i{width:3px;background:var(--accent);border-radius:2px;display:block}
+
+  /* ===================== Control screen ===================== */
+  .hud{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:14px}
+  .hud .card{margin:0;padding:10px 11px}
+  .hud .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .hud .val{font-size:16px;font-weight:700;margin-top:3px}
+
+  .joywrap{display:grid;place-items:center;margin:6px 0 16px}
+  .joypad{
+    position:relative;width:236px;height:236px;border-radius:50%;
+    background:radial-gradient(circle at 50% 40%,#1a2b47,#0e1830 70%);
+    border:1px solid var(--line);touch-action:none;user-select:none;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.5);
+  }
+  .joypad .ring{position:absolute;inset:26px;border-radius:50%;border:1px dashed #2b3f5e}
+  .joypad .cross{position:absolute;inset:0;pointer-events:none}
+  .joypad .cross span{
+    position:absolute;color:#41577a;font-size:11px;font-weight:700;
+  }
+  .knob{
+    position:absolute;left:50%;top:50%;width:92px;height:92px;margin:-46px 0 0 -46px;border-radius:50%;
+    background:linear-gradient(150deg,#1f3555,#16253e);border:1px solid #33507a;
+    display:grid;place-items:center;font-size:12px;font-weight:700;color:#bcd4ef;
+    box-shadow:0 10px 24px rgba(0,0,0,.5);transition:transform .06s linear;
+  }
+  .knob.active{border-color:var(--accent);box-shadow:0 0 0 4px rgba(14,165,233,.18),0 10px 24px rgba(0,0,0,.5)}
+
+  .slider{width:100%;-webkit-appearance:none;height:8px;border-radius:99px;background:var(--surface-2);outline:none}
+  .slider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:linear-gradient(140deg,var(--accent),var(--accent-2));cursor:pointer;
+    border:3px solid #0d1526;box-shadow:0 2px 10px rgba(14,165,233,.5);
+  }
+
+  /* ===================== Sensor screen ===================== */
+  .gauge{position:relative;display:grid;place-items:center;margin:6px 0 8px}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .mid{position:absolute;text-align:center}
+  .gauge .mid b{font-size:40px;font-weight:700;letter-spacing:-1px;display:block;line-height:1}
+  .gauge .mid span{font-size:12px;color:var(--muted)}
+
+  .bars{display:flex;align-items:flex-end;gap:5px;height:76px;margin-top:6px}
+  .bars i{flex:1;background:linear-gradient(180deg,var(--accent),#0b6fa4);border-radius:4px 4px 2px 2px;min-height:4px;transition:height .3s}
+
+  /* ===================== Mode screen ===================== */
+  .switch{position:relative;width:58px;height:32px;flex:none}
+  .switch input{opacity:0;width:100%;height:100%;margin:0;cursor:pointer;position:relative;z-index:2}
+  .track{position:absolute;inset:0;background:#2a3d5c;border-radius:99px;transition:.2s}
+  .track::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:.2s}
+  .switch input:checked + .track{background:linear-gradient(140deg,var(--accent),var(--accent-2))}
+  .switch input:checked + .track::after{transform:translateX(26px)}
+
+  /* ===================== Settings ===================== */
+  .list{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .item{display:flex;align-items:center;gap:12px;padding:14px 15px;border-bottom:1px solid var(--line);min-height:var(--tap)}
+  .item:last-child{border-bottom:0}
+  .item .ic{width:34px;height:34px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;flex:none}
+  .item b{font-size:13.5px;font-weight:600;display:block}
+  .item span{font-size:11.5px;color:var(--muted)}
+  .item .end{margin-left:auto;color:var(--muted);font-size:12.5px}
+
+  /* ===================== Toast ===================== */
+  .toast{
+    position:absolute;left:50%;bottom:104px;transform:translate(-50%,20px);
+    background:#0b1626;border:1px solid var(--line);border-left:4px solid var(--accent);
+    padding:12px 16px;border-radius:12px;font-size:12.5px;max-width:300px;
+    opacity:0;pointer-events:none;transition:.24s;z-index:60;box-shadow:0 16px 40px rgba(0,0,0,.5);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.danger{border-left-color:var(--danger)}
+  .toast.ok{border-left-color:var(--success)}
+
+  /* ===================== Notes panel ===================== */
+  .notes h3{margin:0 0 4px;font-size:15px}
+  .notes .desc{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 18px}
+  .notes .block{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .notes .block h4{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent-2)}
+  .notes ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.75;color:#c3d3e6}
+  .notes .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px}
+  .notes .flow .n{background:var(--surface-2);border:1px solid var(--line);padding:7px 12px;border-radius:10px}
+  .notes .flow .a{color:var(--muted)}
+  .notes .sw{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+  .notes .sw div{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
+  .notes .sw i{width:16px;height:16px;border-radius:5px;display:block;border:1px solid rgba(255,255,255,.15)}
+
+  /* ===================== Embed mode (screenshots) ===================== */
+  body.embed{background:#0b1220;overflow:hidden}
+  body.embed .wrap{padding:0;max-width:none;margin:0}
+  body.embed .topbar,body.embed .notes{display:none}
+  body.embed .stage{display:block;margin:0;gap:0}
+  body.embed .phone{
+    position:fixed;left:0;top:0;margin:0;
+    border-radius:0;box-shadow:none;padding:0;width:390px;height:844px;
+  }
+  body.embed .screen{border-radius:0}
+  body.embed .phone::after{display:none}
+  body.embed .notch{top:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 11l1.6-4.4A2 2 0 0 1 8.5 5h7a2 2 0 0 1 1.9 1.6L19 11"/>
+          <path d="M3 11h18v6a1 1 0 0 1-1 1h-1v1.5a1.5 1.5 0 0 1-3 0V18H8v1.5a1.5 1.5 0 0 1-3 0V18H4a1 1 0 0 1-1-1z"/>
+          <circle cx="7.5" cy="14" r="1.2"/><circle cx="16.5" cy="14" r="1.2"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Prototype — Aplikasi Kontrol Mobil RC IoT</h1>
+        <p>Tugas 3 · Tim Ecayci Lover · Application Project II</p>
+      </div>
+    </div>
+    <div class="chips" id="chips">
+      <button class="chip" data-go="connect">Hubungkan</button>
+      <button class="chip" data-go="control">Kontrol</button>
+      <button class="chip" data-go="sensor">Sensor</button>
+      <button class="chip" data-go="mode">Mode</button>
+      <button class="chip" data-go="settings">Setelan</button>
+    </div>
+  </header>
+
+  <div class="stage">
+    <!-- ==================== PHONE ==================== -->
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar">
+          <span id="clock">09:41</span>
+          <span class="right">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" opacity=".8"><path d="M2 17h3v3H2zm5-4h3v7H7zm5-4h3v11h-3zm5-4h3v15h-3z"/></svg>
+            <svg viewBox="0 0 24 24" width="17" height="15" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="7" width="17" height="10" rx="2.5"/><rect x="4" y="9" width="10" height="6" rx="1" fill="currentColor" stroke="none"/><path d="M21 10.5v3" stroke-linecap="round"/></svg>
+          </span>
+        </div>
+
+        <div class="connbar">
+          <span class="pill off" id="sbConn"><i class="dot"></i> Terputus</span>
+          <span class="small muted" id="connName">Belum ada perangkat</span>
+        </div>
+
+        <div class="viewport" id="viewport">
+
+          <!-- ---------- SCREEN: CONNECT ---------- -->
+          <section class="scr" data-screen="connect">
+            <div class="connect">
+              <div class="hero">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v18M8.5 6.5l3.5 3.5 3.5-3.5M8.5 17.5L12 14l3.5 3.5"/>
+                </svg>
+              </div>
+              <h2>Hubungkan ke Mobil</h2>
+              <p class="lead">Pilih perangkat mobil RC Anda, lalu tekan Hubungkan.</p>
+
+              <div class="device sel" data-device="RC-CAR-01">
+                <div class="ic">
+                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#22d3ee" stroke-width="2"><path d="M7 7l10 10M17 7L7 17"/></svg>
+                </div>
+                <div><b>RC-CAR-01</b><span>HC-05 · Siap dipasangkan</span></div>
+                <div class="rssi"><i style="height:5px"></i><i style="height:9px"></i><i style="height:13px"></i><i style="height:16px"></i></div>
+              </div>
+
+              <div class="device" data-device="RC-CAR-02">
+                <div class="ic">
+                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#8aa0b8" stroke-width="2"><path d="M7 7l10 10M17 7L7 17"/></svg>
+                </div>
+                <div><b>RC-CAR-02</b><span>HC-05 · Tidak dikenal</span></div>
+                <div class="rssi"><i style="height:5px"></i><i style="height:8px"></i><i style="height:4px;opacity:.25"></i><i style="height:4px;opacity:.25"></i></div>
+              </div>
+
+              <div style="height:8px"></div>
+              <button class="btn primary" id="btnConnect">Hubungkan</button>
+              <p class="small muted" style="margin-top:14px">Pastikan Bluetooth perangkat aktif dan mobil dalam keadaan menyala.</p>
+            </div>
+          </section>
+
+          <!-- ---------- SCREEN: CONTROL ---------- -->
+          <section class="scr" data-screen="control">
+            <h2 class="title">Kontrol</h2>
+            <p class="lead">Geser tuas untuk mengarahkan mobil, atur kecepatan, dan gunakan E-Stop bila perlu.</p>
+
+            <div class="hud">
+              <div class="card"><div class="lbl">Kecepatan</div><div class="val"><span id="hudSpeed">70</span>%</div></div>
+              <div class="card"><div class="lbl">Jarak</div><div class="val"><span id="hudDist">--</span> cm</div></div>
+              <div class="card"><div class="lbl">Mode</div><div class="val" id="hudMode" style="font-size:13px">Manual</div></div>
+            </div>
+
+            <div class="joywrap">
+              <div class="joypad" id="joypad">
+                <div class="ring"></div>
+                <div class="cross">
+                  <span style="top:8px;left:50%;transform:translateX(-50%)">MAJU</span>
+                  <span style="bottom:8px;left:50%;transform:translateX(-50%)">MUNDUR</span>
+                  <span style="left:10px;top:50%;transform:translateY(-50%)">KIRI</span>
+                  <span style="right:10px;top:50%;transform:translateY(-50%)">KANAN</span>
+                </div>
+                <div class="knob" id="knob">DIAM</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="row" style="margin-bottom:10px">
+                <span class="small muted">Kecepatan motor</span>
+                <b class="small" id="speedVal">180 / 255</b>
+              </div>
+              <input class="slider" type="range" min="0" max="255" value="180" id="speed">
+            </div>
+
+            <button class="btn danger" id="estop" style="min-height:58px;font-size:15.5px">
+              ⛔ &nbsp;E-STOP — Hentikan Semua Motor
+            </button>
+            <p class="small muted" style="text-align:center;margin:10px 0 0">Perintah terakhir: <b id="lastCmd">—</b></p>
+          </section>
+
+          <!-- ---------- SCREEN: SENSOR ---------- -->
+          <section class="scr" data-screen="sensor">
+            <h2 class="title">Sensor Ultrasonik</h2>
+            <p class="lead">Pembacaan jarak objek di depan mobil secara langsung.</p>
+
+            <div class="gauge">
+              <svg width="230" height="230" viewBox="0 0 230 230">
+                <circle cx="115" cy="115" r="98" fill="none" stroke="#1b2b47" stroke-width="16"/>
+                <circle id="gaugeArc" cx="115" cy="115" r="98" fill="none" stroke="#22d3ee"
+                        stroke-width="16" stroke-linecap="round"
+                        stroke-dasharray="616" stroke-dashoffset="300"/>
+              </svg>
+              <div class="mid">
+                <b id="distBig">--</b>
+                <span>sentimeter</span>
+              </div>
+            </div>
+
+            <div class="row" style="justify-content:center;margin-bottom:14px">
+              <span class="pill ok" id="distPill"><i class="dot"></i> Aman</span>
+            </div>
+
+            <div class="card">
+              <div class="row" style="margin-bottom:4px">
+                <span class="small muted">Riwayat 10 pembacaan</span>
+                <span class="small muted">ambang 20 cm</span>
+              </div>
+              <div class="bars" id="bars"></div>
+            </div>
+
+            <div class="list">
+              <div class="item"><div class="ic">📡</div><div><b>Sensor HC-SR04</b><span>Status: aktif</span></div><span class="end">Trig / Echo</span></div>
+              <div class="item"><div class="ic">🔁</div><div><b>Frekuensi pembacaan</b><span>Interval pembaruan</span></div><span class="end">10 Hz</span></div>
+            </div>
+          </section>
+
+          <!-- ---------- SCREEN: MODE ---------- -->
+          <section class="scr" data-screen="mode">
+            <h2 class="title">Mode Berkendara</h2>
+            <p class="lead">Aktifkan bantuan otomatis agar mobil menghindari rintangan sendiri.</p>
+
+            <div class="card">
+              <div class="row">
+                <div style="padding-right:12px">
+                  <b style="font-size:14.5px">Mode Hindari Rintangan</b>
+                  <p class="small muted" style="margin:5px 0 0;line-height:1.5">Mobil berhenti otomatis saat jarak &lt; ambang batas.</p>
+                </div>
+                <label class="switch"><input type="checkbox" id="avoid"><span class="track"></span></label>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="row" style="margin-bottom:10px">
+                <span class="small muted">Ambang batas jarak</span>
+                <b class="small"><span id="thVal">20</span> cm</b>
+              </div>
+              <input class="slider" type="range" min="5" max="100" value="20" id="threshold">
+              <p class="small muted" style="margin:10px 0 0">Mobil akan berhenti bila jarak kurang dari nilai ini.</p>
+            </div>
+
+            <div class="card" style="border-left:3px solid var(--accent)">
+              <b class="small">Status saat ini</b>
+              <p class="small muted" style="margin:6px 0 0" id="modeStatus">Mode manual — kontrol penuh oleh pengguna.</p>
+            </div>
+          </section>
+
+          <!-- ---------- SCREEN: SETTINGS ---------- -->
+          <section class="scr" data-screen="settings">
+            <h2 class="title">Setelan</h2>
+            <p class="lead">Konfigurasi aplikasi dan informasi koneksi.</p>
+
+            <div class="list" style="margin-bottom:14px">
+              <div class="item">
+                <div class="ic">🔗</div>
+                <div><b>Perangkat terhubung</b><span id="setDevice">Belum terhubung</span></div>
+                <span class="end" id="setConn">—</span>
+              </div>
+              <div class="item">
+                <div class="ic">📶</div>
+                <div><b>Bluetooth HC-05</b><span>Baud rate 9600</span></div>
+                <span class="end">SPP</span>
+              </div>
+              <div class="item">
+                <div class="ic">⚡</div>
+                <div><b>Kecepatan default</b><span>Saat mobil baru dinyalakan</span></div>
+                <span class="end">180</span>
+              </div>
+            </div>
+
+            <div class="list" style="margin-bottom:14px">
+              <div class="item"><div class="ic">🌗</div><div><b>Tema gelap</b><span>Tampilan cockpit</span></div><span class="end">Aktif</span></div>
+              <div class="item"><div class="ic">📳</div><div><b>Getaran umpan balik</b><span>Saat tombol ditekan</span></div><span class="end">Aktif</span></div>
+              <div class="item"><div class="ic">🔋</div><div><b>Hemat daya</b><span>Kurangi frekuensi sensor</span></div><span class="end">Nonaktif</span></div>
+            </div>
+
+            <button class="btn" id="btnDisconnect">Putuskan Koneksi</button>
+            <p class="small muted" style="text-align:center;margin:14px 0 0">Aplikasi Kontrol RC IoT · v1.0</p>
+          </section>
+
+        </div><!-- /viewport -->
+
+        <nav class="tabbar hidden" id="tabbar">
+          <button class="tab" data-go="control">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Kontrol
+          </button>
+          <button class="tab" data-go="sensor">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 12l6-6"/><circle cx="12" cy="12" r="2.2"/><path d="M6.5 17.5a7.8 7.8 0 0 1 0-11M17.5 6.5a7.8 7.8 0 0 1 0 11"/></svg>
+            Sensor
+          </button>
+          <button class="tab" data-go="mode">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 4.4-3.1 8.3-8 9-4.9-.7-8-4.6-8-9V7z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>
+            Mode
+          </button>
+          <button class="tab" data-go="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.5-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 3a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.5l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4z"/></svg>
+            Setelan
+          </button>
+        </nav>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+
+    <!-- ==================== NOTES ==================== -->
+    <aside class="notes">
+      <h3 id="noteTitle">Alur Prototype</h3>
+      <p class="desc" id="noteDesc">Prototype interaktif aplikasi kontrol mobil RC. Klik tombol di layar atau chip di atas untuk berpindah layar.</p>
+
+      <div class="block">
+        <h4>Alur Penggunaan</h4>
+        <div class="flow">
+          <span class="n">Hubungkan</span><span class="a">→</span>
+          <span class="n">Kontrol</span><span class="a">→</span>
+          <span class="n">Sensor</span><span class="a">→</span>
+          <span class="n">Mode</span><span class="a">→</span>
+          <span class="n">Setelan</span>
+        </div>
+      </div>
+
+      <div class="block">
+        <h4>Prinsip UI/UX yang Diterapkan</h4>
+        <ul>
+          <li><b>Konsistensi</b> — warna, radius, dan ikon seragam di semua layar.</li>
+          <li><b>Umpan balik</b> — tuas dan tombol bereaksi seketika (toast + status).</li>
+          <li><b>Hierarki visual</b> — E-Stop berwarna merah dan paling menonjol.</li>
+          <li><b>Target sentuh</b> — semua tombol minimal 48 px agar mudah ditekan.</li>
+          <li><b>Pencegahan kesalahan</b> — status koneksi selalu terlihat di header.</li>
+          <li><b>Aksesibilitas</b> — kontras teks tinggi pada tema gelap.</li>
+        </ul>
+      </div>
+
+      <div class="block">
+        <h4>Palet Warna</h4>
+        <div class="sw">
+          <div><i style="background:#0ea5e9"></i> #0ea5e9 Aksen</div>
+          <div><i style="background:#22d3ee"></i> #22d3ee Aksen 2</div>
+          <div><i style="background:#22c55e"></i> #22c55e Aman</div>
+          <div><i style="background:#f59e0b"></i> #f59e0b Waspada</div>
+          <div><i style="background:#ef4444"></i> #ef4444 Bahaya</div>
+          <div><i style="background:#0d1526"></i> #0d1526 Latar</div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h4>Keterkaitan Use Case</h4>
+        <ul>
+          <li><b>UC-01</b> Menghubungkan ke Mobil → layar Hubungkan</li>
+          <li><b>UC-02</b> Mengendalikan Gerak → layar Kontrol (tuas)</li>
+          <li><b>UC-03</b> Mengatur Kecepatan → slider kecepatan</li>
+          <li><b>UC-04</b> E-Stop → tombol merah di layar Kontrol</li>
+          <li><b>UC-05</b> Mode Hindari Rintangan → layar Mode</li>
+          <li><b>UC-06</b> Memantau Jarak → layar Sensor</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var params   = new URLSearchParams(location.search);
+  var EMBED    = params.get("embed") === "1";
+  var state = {
+    connected: false,
+    screen: "connect",
+    speed: 180,
+    distance: 42,
+    history: [],
+    avoid: false,
+    threshold: 20,
+    device: "RC-CAR-01"
+  };
+
+  var $  = function(s){ return document.querySelector(s); };
+  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  if (EMBED) document.body.classList.add("embed");
+
+  /* ---------------- clock ---------------- */
+  function tick(){
+    var d = new Date();
+    var hh = String(d.getHours()).padStart(2,"0");
+    var mm = String(d.getMinutes()).padStart(2,"0");
+    $("#clock").textContent = hh + ":" + mm;
+  }
+  tick(); setInterval(tick, 20000);
+
+  /* ---------------- toast ---------------- */
+  var toastTimer = null;
+  function toast(msg, kind){
+    var t = $("#toast");
+    t.textContent = msg;
+    t.className = "toast show" + (kind ? " " + kind : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.className = "toast"; }, 1900);
+  }
+
+  /* ---------------- navigation ---------------- */
+  var NOTES = {
+    connect:  ["Menghubungkan ke Mobil (UC-01)",
+               "Pengguna memilih perangkat mobil RC dari daftar dan menekan Hubungkan. Status koneksi ditampilkan pada header."],
+    control:  ["Mengendalikan Gerak Mobil (UC-02, UC-03, UC-04)",
+               "Layar utama: tuas arah untuk gerak, slider untuk kecepatan, dan tombol E-Stop merah untuk berhenti darurat."],
+    sensor:   ["Memantau Jarak Ultrasonik (UC-06)",
+               "Menampilkan jarak objek di depan mobil secara langsung beserta status aman/waspada/bahaya."],
+    mode:     ["Mode Hindari Rintangan (UC-05)",
+               "Mengaktifkan bantuan otomatis dan mengatur ambang batas jarak pemicu berhenti."],
+    settings: ["Setelan",
+               "Informasi koneksi, preferensi aplikasi, dan tombol untuk memutuskan koneksi."]
+  };
+
+  function go(name, silent){
+    if (name !== "connect" && !state.connected){
+      if (!silent) toast("Hubungkan ke mobil terlebih dahulu.", "danger");
+      name = "connect";
+    }
+    state.screen = name;
+
+    $$(".scr").forEach(function(s){
+      s.classList.toggle("active", s.dataset.screen === name);
+    });
+    $$(".tab").forEach(function(t){
+      t.classList.toggle("on", t.dataset.go === name);
+    });
+    $$("#chips .chip").forEach(function(c){
+      c.classList.toggle("on", c.dataset.go === name);
+    });
+    $("#tabbar").classList.toggle("hidden", name === "connect");
+    $(".connbar").style.display = (name === "connect") ? "none" : "flex";
+    $("#viewport").scrollTop = 0;
+
+    var n = NOTES[name];
+    if (n){ $("#noteTitle").textContent = n[0]; $("#noteDesc").textContent = n[1]; }
+  }
+
+  document.addEventListener("click", function(e){
+    var el = e.target.closest("[data-go]");
+    if (el){ go(el.dataset.go); }
+  });
+
+  /* ---------------- device selection ---------------- */
+  $$(".device").forEach(function(d){
+    d.addEventListener("click", function(){
+      $$(".device").forEach(function(x){ x.classList.remove("sel"); });
+      d.classList.add("sel");
+      state.device = d.dataset.device;
+    });
+  });
+
+  /* ---------------- connect / disconnect ---------------- */
+  function setConnected(on){
+    state.connected = on;
+    var pill = $("#sbConn");
+    pill.className = "pill " + (on ? "ok" : "off");
+    pill.innerHTML = '<i class="dot"></i> ' + (on ? "Terhubung" : "Terputus");
+    $("#setDevice").textContent = on ? state.device + " (HC-05)" : "Belum terhubung";
+    $("#setConn").textContent = on ? "Aktif" : "—";
+    $("#connName").textContent = on ? state.device + " · HC-05" : "Belum ada perangkat";
+    if (on){
+      $("#hudDist").textContent = state.distance;
+      startTelemetry();
+    } else {
+      stopTelemetry();
+      $("#hudDist").textContent = "--";
+    }
+  }
+
+  $("#btnConnect").addEventListener("click", function(){
+    toast("Menghubungkan ke " + state.device + "…");
+    setTimeout(function(){
+      setConnected(true);
+      toast("Terhubung ke " + state.device, "ok");
+      go("control", true);
+    }, 750);
+  });
+
+  $("#btnDisconnect").addEventListener("click", function(){
+    setConnected(false);
+    toast("Koneksi diputuskan.");
+    go("connect", true);
+  });
+
+  /* ---------------- joystick ---------------- */
+  var pad = $("#joypad"), knob = $("#knob"), dragging = false;
+
+  function setKnob(dx, dy, label){
+    knob.style.transform = "translate(" + dx + "px," + dy + "px)";
+    knob.textContent = label;
+    knob.classList.toggle("active", label !== "DIAM");
+  }
+
+  function move(ev){
+    var r = pad.getBoundingClientRect();
+    var cx = r.left + r.width/2, cy = r.top + r.height/2;
+    var dx = ev.clientX - cx, dy = ev.clientY - cy;
+    var max = r.width/2 - 46;
+    var dist = Math.hypot(dx, dy);
+    if (dist > max){ dx = dx/dist*max; dy = dy/dist*max; }
+
+    var dead = 14, label = "DIAM";
+    if (Math.hypot(dx,dy) > dead){
+      var ang = Math.atan2(dy, dx) * 180/Math.PI;  // -180..180, 0 = kanan
+      if (ang >= -45 && ang < 45)       label = "KANAN";
+      else if (ang >= 45 && ang < 135)  label = "MUNDUR";
+      else if (ang >= -135 && ang < -45)label = "MAJU";
+      else                              label = "KIRI";
+    }
+    setKnob(dx, dy, label);
+    if (label !== "DIAM"){ $("#lastCmd").textContent = label; }
+  }
+
+  pad.addEventListener("pointerdown", function(ev){
+    dragging = true;
+    pad.setPointerCapture(ev.pointerId);
+    move(ev);
+  });
+  pad.addEventListener("pointermove", function(ev){ if (dragging) move(ev); });
+  function release(){
+    if (!dragging) return;
+    dragging = false;
+    setKnob(0, 0, "DIAM");
+    $("#lastCmd").textContent = "DIAM";
+  }
+  pad.addEventListener("pointerup", release);
+  pad.addEventListener("pointercancel", release);
+
+  /* ---------------- speed ---------------- */
+  $("#speed").addEventListener("input", function(){
+    state.speed = +this.value;
+    $("#speedVal").textContent = state.speed + " / 255";
+    $("#hudSpeed").textContent = Math.round(state.speed/255*100);
+  });
+
+  /* ---------------- E-Stop ---------------- */
+  $("#estop").addEventListener("click", function(){
+    setKnob(0,0,"DIAM");
+    $("#lastCmd").textContent = "E-STOP";
+    toast("E-STOP dikirim — semua motor berhenti.", "danger");
+  });
+
+  /* ---------------- avoid mode ---------------- */
+  $("#avoid").addEventListener("change", function(){
+    state.avoid = this.checked;
+    $("#hudMode").textContent = state.avoid ? "Hindari" : "Manual";
+    $("#modeStatus").textContent = state.avoid
+      ? "Mode hindari rintangan AKTIF — mobil berhenti otomatis bila jarak < " + state.threshold + " cm."
+      : "Mode manual — kontrol penuh oleh pengguna.";
+    toast(state.avoid ? "Mode hindari rintangan diaktifkan." : "Mode hindari rintangan dimatikan.",
+          state.avoid ? "ok" : "");
+  });
+
+  $("#threshold").addEventListener("input", function(){
+    state.threshold = +this.value;
+    $("#thVal").textContent = state.threshold;
+    if (state.avoid) $("#modeStatus").textContent =
+      "Mode hindari rintangan AKTIF — mobil berhenti otomatis bila jarak < " + state.threshold + " cm.";
+  });
+
+  /* ---------------- telemetry ---------------- */
+  var telTimer = null;
+
+  function renderBars(){
+    var wrap = $("#bars");
+    if (!wrap.children.length){
+      for (var i=0;i<10;i++) wrap.appendChild(document.createElement("i"));
+    }
+    var max = Math.max.apply(null, state.history.concat([1]));
+    Array.prototype.forEach.call(wrap.children, function(bar, i){
+      var v = state.history[i];
+      if (v == null){ bar.style.height = "4px"; bar.style.opacity = ".25"; return; }
+      bar.style.opacity = "1";
+      bar.style.height = Math.max(6, v/max*70) + "px";
+      bar.style.background = v < state.threshold
+        ? "linear-gradient(180deg,#f87171,#b91c1c)"
+        : "linear-gradient(180deg,#22d3ee,#0b6fa4)";
+    });
+  }
+
+  function updateDistance(){
+    // Simulated sensor sweep (firmware reports real values over Bluetooth).
+    var base = 30 + Math.random()*55;
+    if (state.avoid && Math.random() < .18) base = 6 + Math.random()*16; // occasional obstacle
+    state.distance = Math.round(base);
+
+    $("#distBig").textContent = state.distance;
+    $("#hudDist").textContent = state.distance;
+
+    var frac = Math.min(state.distance, 150) / 150;
+    $("#gaugeArc").setAttribute("stroke-dashoffset", String(616 * (1 - frac)));
+
+    var pill = $("#distPill");
+    if (state.distance < state.threshold){
+      pill.className = "pill" ; pill.style.cssText = "background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.45);color:#fca5a5";
+      pill.innerHTML = '<i class="dot"></i> Bahaya';
+      if (state.avoid) toast("Rintangan terdeteksi — mobil berhenti.", "danger");
+    } else if (state.distance < state.threshold * 2){
+      pill.style.cssText = "background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.45);color:#f7c46c";
+      pill.innerHTML = '<i class="dot"></i> Waspada';
+    } else {
+      pill.style.cssText = "";
+      pill.className = "pill ok";
+      pill.innerHTML = '<i class="dot"></i> Aman';
+    }
+
+    state.history.push(state.distance);
+    if (state.history.length > 10) state.history.shift();
+    renderBars();
+  }
+
+  // Seed a plausible recent history so the chart is populated on first view.
+  function seedHistory(){
+    state.history = [];
+    for (var i=0;i<10;i++) state.history.push(Math.round(28 + Math.random()*52));
+    state.history[state.history.length-1] = state.distance;
+    renderBars();
+  }
+
+  function startTelemetry(){
+    if (telTimer) return;
+    updateDistance();
+    seedHistory();
+    telTimer = setInterval(updateDistance, 1200);
+  }
+  function stopTelemetry(){
+    clearInterval(telTimer); telTimer = null;
+    state.history = [];
+    renderBars();
+  }
+
+  /* ---------------- boot ---------------- */
+  state.distance = 52;
+  $("#distBig").textContent = state.distance;
+  $("#hudDist").textContent = state.distance;
+  $("#gaugeArc").setAttribute("stroke-dashoffset", String(616 * (1 - Math.min(state.distance,150)/150)));
+  seedHistory();
+  var start = params.get("screen");
+  if (start && NOTES[start]){ if (start !== "connect") setConnected(true); go(start, true); }
+  else { go("connect", true); }
+})();
+</script>
+</body>
+</html>

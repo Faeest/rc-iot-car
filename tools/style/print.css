@@ -1,0 +1,259 @@
+/* ---------------------------------------------------------------------------
+ * print.css — stylesheet for course deliverables (docs/*.md -> PDF)
+ * Used by tools/md2pdf.py. Tuned for A4 print via headless Chrome.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  --navy: #0f2c4d;
+  --navy-2: #1b4b7a;
+  --accent: #0ea5e9;
+  --ink: #1a2230;
+  --muted: #5b6b7f;
+  --line: #d5dee8;
+  --soft: #f4f7fb;
+  --soft-2: #eaf2fa;
+}
+
+@page {
+  size: A4;
+  margin: 20mm 18mm 18mm 18mm;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+body {
+  font-family: "Segoe UI", "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.8pt;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+  min-height: 246mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  page-break-after: always;
+  border-top: 10px solid var(--navy);
+  padding-top: 14mm;
+}
+.cover .kicker {
+  text-transform: uppercase;
+  letter-spacing: 2.4px;
+  font-size: 9pt;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10mm;
+}
+.cover h1 {
+  font-size: 30pt;
+  line-height: 1.15;
+  color: var(--navy);
+  margin: 0 0 4mm 0;
+  border: none;
+  padding: 0;
+}
+.cover .subtitle {
+  font-size: 14pt;
+  color: var(--navy-2);
+  font-weight: 500;
+  margin: 0 0 12mm 0;
+}
+.cover .rule { height: 3px; width: 70mm; background: var(--accent); margin-bottom: 12mm; }
+.cover dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 42mm 1fr;
+  row-gap: 2.6mm;
+  font-size: 11pt;
+}
+.cover dl dt { color: var(--muted); font-weight: 600; }
+.cover dl dd { margin: 0; color: var(--ink); }
+.cover .foot {
+  margin-top: auto;
+  font-size: 9.5pt;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 3mm;
+}
+
+/* ------------------------------------------------------------- headings */
+h1, h2, h3, h4 { color: var(--navy); page-break-after: avoid; }
+h1 {
+  font-size: 19pt;
+  margin: 0 0 6mm 0;
+  padding-bottom: 2.5mm;
+  border-bottom: 2.5px solid var(--navy);
+}
+h2 {
+  font-size: 14.5pt;
+  margin: 9mm 0 3mm 0;
+  padding-left: 3mm;
+  border-left: 4px solid var(--accent);
+}
+h3 { font-size: 12pt; margin: 6mm 0 2mm 0; color: var(--navy-2); }
+h4 { font-size: 10.8pt; margin: 4mm 0 1.5mm 0; color: var(--navy-2); }
+
+p { margin: 0 0 2.6mm 0; }
+
+a { color: var(--navy-2); text-decoration: none; border-bottom: 1px solid var(--accent); }
+
+ul, ol { margin: 0 0 3mm 0; padding-left: 6mm; }
+li { margin-bottom: 1.2mm; }
+li > ul, li > ol { margin-top: 1.2mm; }
+
+hr { border: none; border-top: 1px solid var(--line); margin: 6mm 0; }
+
+strong { color: var(--navy); }
+
+/* ---------------------------------------------------------------- tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0 5mm 0;
+  font-size: 9.8pt;
+  page-break-inside: auto;
+}
+thead { display: table-header-group; }
+tr { page-break-inside: avoid; }
+th {
+  background: var(--navy);
+  color: #fff;
+  text-align: left;
+  font-weight: 600;
+  padding: 2.2mm 2.6mm;
+  border: 1px solid var(--navy);
+}
+td {
+  padding: 2mm 2.6mm;
+  border: 1px solid var(--line);
+  vertical-align: top;
+}
+tbody tr:nth-child(even) td { background: var(--soft); }
+table code { font-size: 9pt; }
+
+/* Keep short code columns (FR-01, NFR-01, UC-01) on one line; long label
+   columns still wrap normally. Applied by md2pdf.py when a table's first
+   column contains only short codes. */
+table.codes td:first-child,
+table.codes th:first-child { white-space: nowrap; }
+
+/* ------------------------------------------------------------ code blocks */
+code {
+  font-family: "Cascadia Mono", "Consolas", "Courier New", monospace;
+  background: var(--soft-2);
+  color: #0b3556;
+  padding: 0.5mm 1.4mm;
+  border-radius: 3px;
+  font-size: 9.3pt;
+}
+pre {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  padding: 3mm 4mm;
+  overflow-x: auto;
+  page-break-inside: avoid;
+  margin: 3mm 0 4mm 0;
+}
+pre code { background: none; color: #12283d; padding: 0; font-size: 9pt; line-height: 1.45; }
+
+/* ------------------------------------------------------------- blockquote */
+blockquote {
+  margin: 3mm 0;
+  padding: 2.5mm 4mm;
+  background: var(--soft-2);
+  border-left: 4px solid var(--navy-2);
+  color: #2b3a4d;
+  page-break-inside: avoid;
+}
+blockquote p:last-child { margin-bottom: 0; }
+
+/* ------------------------------------------------------------------ media */
+img { max-width: 100%; height: auto; }
+figure { margin: 4mm 0; text-align: center; page-break-inside: avoid; }
+figure img { border: 1px solid var(--line); border-radius: 4px; }
+figcaption { font-size: 9pt; color: var(--muted); margin-top: 1.5mm; }
+
+/* Phone screenshots are very tall (9:19.5). Cap their height so a heading plus
+   a screenshot always fit together on one page, and centre them. */
+img[src*="screen-"] {
+  display: block;
+  margin: 3mm auto;
+  max-height: 122mm;
+  width: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+/* Wide composite sheets span the full text width. */
+img[src*="-sheet"] {
+  display: block;
+  width: 100%;
+  max-height: none;
+  margin: 4mm 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+/* Keep an image with its paragraph on the same page. */
+p:has(> img) { page-break-inside: avoid; }
+
+/* ------------------------------------------------------- callout / badges */
+.callout {
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--navy-2);
+  background: var(--soft);
+  padding: 3mm 4mm;
+  margin: 3mm 0;
+  border-radius: 4px;
+  page-break-inside: avoid;
+}
+.callout .title { font-weight: 700; color: var(--navy); display: block; margin-bottom: 1mm; }
+.badge {
+  display: inline-block;
+  font-size: 8.4pt;
+  font-weight: 700;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  padding: 0.6mm 2mm;
+  border-radius: 20px;
+  background: var(--soft-2);
+  color: var(--navy-2);
+  border: 1px solid var(--line);
+}
+.badge.must { background: #fdecec; color: #b42318; border-color: #f3c2c2; }
+.badge.should { background: #fff5e5; color: #b25e09; border-color: #f5dcb3; }
+.badge.could { background: #eef7ee; color: #2f7d32; border-color: #c8e6c9; }
+
+/* -------------------------------------------------------------------- toc */
+.toc {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 4mm 6mm;
+  margin: 0 0 6mm 0;
+  page-break-after: always;
+}
+.toc::before {
+  content: "Daftar Isi";
+  display: block;
+  font-size: 14.5pt;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 3mm;
+}
+.toc ul { list-style: none; padding-left: 0; margin: 0; }
+.toc ul ul { padding-left: 6mm; }
+.toc li { margin: 1.2mm 0; }
+.toc a { border: none; color: var(--ink); }
+
+/* --------------------------------------------------------------- helpers */
+.page-break { page-break-before: always; }
+.avoid-break { page-break-inside: avoid; }
+.center { text-align: center; }
+.muted { color: var(--muted); }
+.small { font-size: 9pt; }

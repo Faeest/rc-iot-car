@@ -91,7 +91,30 @@ scope is "Bluetooth dan WiFi". Confirm whether WiFi is actually in scope.
   `firmware/rc_car/secrets.example.h` is the template.
 - `firmware/README.md` — hardware TODO list (pin map, protocol, modes).
 - `docs/` — course deliverables (team profile, reports). Indonesian prose.
+- `docs/assets/` — generated SVG diagrams (use-case diagram) referenced by the SRS.
+- `docs/tugas-3-prototype/` — wireframe + clickable HTML prototype and screenshots.
+- `tools/` — local doc toolchain (Markdown → PDF, SVG diagrams, screenshots).
 
 ## Course deliverables
 
 - `docs/tugas-1-profil-tim.md` — Tugas 1 (5%): team profile, roles, project vision.
+- `docs/tugas-2-srs.md` — Tugas 2 (5%): SRS — functional/non-functional requirements
+  and use-case modelling (diagram + descriptions).
+- `docs/tugas-3-wireframe-prototype.md` — Tugas 3 (5%): wireframe + UI/UX prototype.
+  Interactive prototype: `docs/tugas-3-prototype/index.html`; lo-fi wireframes:
+  `docs/tugas-3-prototype/wireframe.html`.
+
+Each deliverable is authored as Markdown and rendered to PDF (that is what gets
+submitted). **Do not hand-edit the PDFs** — regenerate them. Order matters: the
+Tugas 3 PDF embeds the prototype screenshots, so rebuild those first.
+
+```bash
+python tools/gen_diagrams.py                               # SVG diagrams (SRS uses these)
+bash   tools/capture.sh                                    # prototype screenshots
+python tools/md2pdf.py docs/*.md                           # all deliverable PDFs
+```
+
+The pipeline is Markdown → styled HTML → PDF via headless Chrome (no pandoc,
+wkhtmltopdf, or LaTeX on this machine). Print styling lives in `tools/style/print.css`.
+Preview a rendered page with `python tools/pdf2png.py <pdf> .scratch/name` (or
+`python tools/shot.py <html> out.png --full`) and read the PNG back to check layout.
