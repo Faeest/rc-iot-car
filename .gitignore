@@ -13,6 +13,14 @@ build/
 .DS_Store
 Thumbs.db
 
-# Local scratch (rendered page previews, temporary HTML) — not deliverables
+# Local-only files — not part of the submitted deliverables
+AGENTS.md
+tools/
 .scratch/
 __pycache__/
+
+# Empty placeholder folders (logos/identity guide to be supplied by the author)
+docs/ubhinus-logo/
+
+# Third-party reference files (not authored by the team)
+docs/Pedoman Report*.docx
